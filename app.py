@@ -1,5 +1,6 @@
 import streamlit as st
 import streamlit.components.v1 as stc
+import random
 
 import pandas as pd
 import neattext.functions as nfx
@@ -8,6 +9,8 @@ import matplotlib.pyplot as plt
 import matplotlib
 matplotlib.use('Agg')
 import altair as alt
+
+from utils import HTML_RANDOM_TEMPLATE
 
 def load_bible(data):
     df = pd.read_csv(data)
@@ -32,9 +35,37 @@ def main():
         verse = st.sidebar.number_input("verse", 1)
 
         bible_df = df[df['book'] == book_name]
-        st.dataframe(bible_df)
 
-    
+        c1, c2 = st.columns([2,1])
+
+        with c1:
+            try:
+                selected_passage = bible_df[(bible_df['chapter'] == chapter) & (bible_df['verse'] == verse)]
+                passage_details = "{} Chapter : {}, Verse : {}".format(book_name, chapter, verse)
+                st.info(passage_details)
+                passage = "{}".format(selected_passage['text'].values[0])
+                st.write(passage)
+            except:
+                st.warning("Book out ot Range")
+        
+        with c2:
+            chapter_list = range(20)
+            verse_list = range(20)
+            ch_choice = random.choice(chapter_list)
+            vs_choice = random.choice(verse_list)
+            random_book_name = random.choice(book_list)
+
+            rand_bible_df = df[df["book"] == random_book_name]
+
+            try:
+                randomly_selected_passage = rand_bible_df[(rand_bible_df['chapter'] == ch_choice) & (rand_bible_df['verse'] == vs_choice)]
+                mytext = randomly_selected_passage["text"].values[0]
+            except:
+                mytext = rand_bible_df[(rand_bible_df['chapter'] == 1) & (rand_bible_df['verse'] == 1)]["text"].values[0]
+            
+            stc.html(HTML_RANDOM_TEMPLATE.format(mytext), height=300)
+
+
     elif choice == "MultiVerse":
         st.subheader("Multi Verse Analysis")
     else:
